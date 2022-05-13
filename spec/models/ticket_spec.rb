@@ -1656,7 +1656,7 @@ RSpec.describe Ticket, type: :model do
       end
     end
 
-    describe 'Cti::CallerId syncing:' do
+    describe 'Cti::CallerId syncing:', performs_jobs: true do
       subject(:ticket) { build(:ticket) }
 
       before { allow(Cti::CallerId).to receive(:build) }
@@ -1665,8 +1665,7 @@ RSpec.describe Ticket, type: :model do
         expect(Cti::CallerId).to receive(:build).with(ticket)
 
         ticket.save
-        TransactionDispatcher.commit
-        Scheduler.worker(true)
+        perform_enqueued_jobs commit_transaction: true
       end
     end
 
@@ -1854,7 +1853,7 @@ RSpec.describe Ticket, type: :model do
       end
     end
 
-    describe 'Ticket lifecycle order-of-operations:' do
+    describe 'Ticket lifecycle order-of-operations:', performs_jobs: true do
       subject!(:ticket) { create(:ticket) }
 
       let!(:agent) { create(:agent, groups: [group]) }
@@ -1872,7 +1871,7 @@ RSpec.describe Ticket, type: :model do
         expect { TransactionDispatcher.commit }
           .to change { ticket.reload.group }.to(group)
 
-        expect { Scheduler.worker(true) }
+        expect { perform_enqueued_jobs }
           .to change { NotificationFactory::Mailer.already_sent?(ticket, agent, 'email') }.to(1)
       end
     end
@@ -1932,7 +1931,7 @@ RSpec.describe Ticket, type: :model do
   end
 
   describe 'Mentions:', sends_notification_emails: true do
-    context 'when notifications' do
+    context 'when notifications', performs_jobs: true do
       let(:prefs_matrix_no_mentions) do
         { 'notification_config' =>
                                    { 'matrix' =>
@@ -1972,13 +1971,11 @@ RSpec.describe Ticket, type: :model do
         create(:mention, mentionable: ticket, user: user_only_mentions)
         create(:mention, mentionable: ticket, user: user_read_mentions)
         create(:mention, mentionable: ticket, user: user_no_mentions)
-        TransactionDispatcher.commit
-        Scheduler.worker(true)
+        perform_enqueued_jobs commit_transaction: true
 
         check_notification do
           ticket.update(priority: Ticket::Priority.find_by(name: '3 high'))
-          TransactionDispatcher.commit
-          Scheduler.worker(true)
+          perform_enqueued_jobs commit_transaction: true
           sent(
             template: 'ticket_update',
             user:     user_no_mentions,
@@ -1996,13 +1993,11 @@ RSpec.describe Ticket, type: :model do
 
       it 'does not inform mention user about the ticket update' do
         ticket
-        TransactionDispatcher.commit
-        Scheduler.worker(true)
+        perform_enqueued_jobs commit_transaction: true
 
         check_notification do
           ticket.update(priority: Ticket::Priority.find_by(name: '3 high'))
-          TransactionDispatcher.commit
-          Scheduler.worker(true)
+          perform_enqueued_jobs commit_transaction: true
           sent(
             template: 'ticket_update',
             user:     user_no_mentions,
@@ -2023,8 +2018,7 @@ RSpec.describe Ticket, type: :model do
           ticket = create(:ticket, owner: user_no_mentions, group: mention_group)
           create(:mention, mentionable: ticket, user: user_read_mentions)
           create(:mention, mentionable: ticket, user: user_only_mentions)
-          TransactionDispatcher.commit
-          Scheduler.worker(true)
+          perform_enqueued_jobs commit_transaction: true
           sent(
             template: 'ticket_create',
             user:     user_no_mentions,
@@ -2043,8 +2037,7 @@ RSpec.describe Ticket, type: :model do
       it 'does not inform mention user about ticket creation' do
         check_notification do
           create(:ticket, owner: user_no_mentions, group: mention_group)
-          TransactionDispatcher.commit
-          Scheduler.worker(true)
+          perform_enqueued_jobs commit_transaction: true
           sent(
             template: 'ticket_create',
             user:     user_no_mentions,
@@ -2065,8 +2058,7 @@ RSpec.describe Ticket, type: :model do
           ticket = create(:ticket, group: no_access_group)
           create(:mention, mentionable: ticket, user: user_read_mentions)
           create(:mention, mentionable: ticket, user: user_only_mentions)
-          TransactionDispatcher.commit
-          Scheduler.worker(true)
+          perform_enqueued_jobs commit_transaction: true
           not_sent(
             template: 'ticket_create',
             user:     user_read_mentions,

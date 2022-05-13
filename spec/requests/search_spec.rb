@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Search', type: :request, searchindex: true do
+RSpec.describe 'Search', type: :request, searchindex: true, performs_jobs: true do
 
   let(:group) { create(:group) }
   let!(:admin) do
@@ -75,17 +75,7 @@ RSpec.describe 'Search', type: :request, searchindex: true do
   end
 
   before do
-    configure_elasticsearch do
-
-      travel 1.minute
-
-      rebuild_searchindex
-
-      # execute background jobs
-      Scheduler.worker(true)
-
-      sleep 6
-    end
+    configure_elasticsearch rebuild: true
   end
 
   describe 'request handling' do
@@ -370,7 +360,7 @@ RSpec.describe 'Search', type: :request, searchindex: true do
       expect(json_response['assets']['User'][customer_nested.id.to_s]).to be_truthy
 
       organization_nested.update(name: 'Cucumber43 Ltd.')
-      Scheduler.worker(true)
+      perform_enqueued_jobs
       SearchIndexBackend.refresh
 
       # even after a change of the organization name we should find
@@ -407,7 +397,7 @@ RSpec.describe 'Search', type: :request, searchindex: true do
       expect(json_response['assets']['Ticket'][ticket_nested.id.to_s]).to be_truthy
 
       organization_nested.update(name: 'Cucumber43 Ltd.')
-      Scheduler.worker(true)
+      perform_enqueued_jobs
       SearchIndexBackend.refresh
 
       post '/api/v1/search/Ticket', params: { query: 'Cucumber43' }, as: :json
@@ -435,7 +425,7 @@ RSpec.describe 'Search', type: :request, searchindex: true do
       expect(group).not_to eq('ultrasupport')
 
       group.update(name: 'ultrasupport')
-      Scheduler.worker(true)
+      perform_enqueued_jobs
       SearchIndexBackend.refresh
 
       post '/api/v1/search/Ticket', params: { query: "number:#{ticket1.number} && group.name:ultrasupport" }, as: :json
@@ -455,7 +445,7 @@ RSpec.describe 'Search', type: :request, searchindex: true do
       expect(ticket1.state.name).not_to eq('ultrastate')
 
       ticket1.state.update(name: 'ultrastate')
-      Scheduler.worker(true)
+      perform_enqueued_jobs
       SearchIndexBackend.refresh
 
       post '/api/v1/search/Ticket', params: { query: "number:#{ticket1.number} && state.name:ultrastate" }, as: :json
@@ -475,7 +465,7 @@ RSpec.describe 'Search', type: :request, searchindex: true do
       expect(ticket1.priority.name).not_to eq('ultrapriority')
 
       ticket1.priority.update(name: 'ultrapriority')
-      Scheduler.worker(true)
+      perform_enqueued_jobs
       SearchIndexBackend.refresh
 
       post '/api/v1/search/Ticket', params: { query: "number:#{ticket1.number} && priority.name:ultrapriority" }, as: :json
@@ -499,7 +489,7 @@ RSpec.describe 'Search', type: :request, searchindex: true do
       expect(json_response['assets']['Ticket'][ticket_nested.id.to_s]).to be_truthy
 
       organization_nested.update(name: 'Cucumber43 Ltd.')
-      Scheduler.worker(true)
+      perform_enqueued_jobs
       SearchIndexBackend.refresh
 
       params = {

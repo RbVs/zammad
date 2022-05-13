@@ -1741,7 +1741,7 @@ RSpec.describe 'Ticket zoom', type: :system do
     end
   end
 
-  context 'Sidebar - Open & Closed Tickets', searchindex: true, authenticated_as: :authenticate do
+  context 'Sidebar - Open & Closed Tickets', searchindex: true, authenticated_as: :authenticate, performs_jobs: true do
     let(:customer) { create(:customer, :with_org) }
     let(:ticket_open) { create(:ticket, group: Group.find_by(name: 'Users'), customer: customer, title: SecureRandom.uuid) }
     let(:ticket_closed) { create(:ticket, group: Group.find_by(name: 'Users'), customer: customer, state: Ticket::State.find_by(name: 'closed'), title: SecureRandom.uuid) }
@@ -1750,7 +1750,7 @@ RSpec.describe 'Ticket zoom', type: :system do
       ticket_open
       ticket_closed
       configure_elasticsearch(required: true, rebuild: true)
-      Scheduler.worker(true)
+      perform_enqueued_jobs
       true
     end
 
