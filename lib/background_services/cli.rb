@@ -4,19 +4,24 @@ class BackgroundServices
   class Cli < Thor
     # rubocop:disable Zammad/DetectTranslatableString
 
-    SERVICES = BackgroundServices.available_services.index_by { |s| s.name.demodulize.underscore.dasherize }
+    SERVICES = BackgroundServices.available_services.index_by do |s|
+      s.name.demodulize.underscore.dasherize
+    end
 
-    desc 'run-all-services', 'Execute all background services'
+    desc 'run-all-services', 'Execute all background services.'
     def run_all_services()
       BackgroundServices.new.run
     end
 
-    desc "run-service #{SERVICES.keys.join('|')}", 'Execute only one background service'
-    def run_service(service)
-      raise "Invalid service #{service}" if SERVICES.exclude?(service)
+    desc "run-services #{SERVICES.keys.join('|')}", 'Execute the specified background service(s) (comma-separated).'
+    def run_service(services_list)
+      services = services_list.split(',').uniq
+      services.each do |service|
+        raise "Invalid service #{service}" if SERVICES.exclude?(service)
+      end
+      raise 'No service was specified.' if services.length.zero?
 
-      puts "Running only one service: #{SERVICES[service]}..." # rubocop:disable Rails/Output
-      sleep 10
+      BackgroundServices.new.run(services.map { |s| SERVICES[s] })
     end
     # rubocop:enable Zammad/DetectTranslatableString
   end

@@ -6,8 +6,8 @@ class BackgroundServices
     BackgroundServices::Service.descendants
   end
 
-  def run
-    self.class.available_services.each do |service|
+  def run(services = self.class.available_services)
+    services.each do |service|
       start(service)
     end
 
