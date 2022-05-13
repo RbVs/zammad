@@ -14,7 +14,7 @@ class BackgroundServices
     end
 
     desc "run-services #{SERVICES.keys.join('|')}", 'Execute the specified background service(s) (comma-separated).'
-    def run_service(services_list)
+    def run_services(services_list)
       services = services_list.split(',').uniq
       services.each do |service|
         raise "Invalid service #{service}" if SERVICES.exclude?(service)
