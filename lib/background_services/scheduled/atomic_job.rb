@@ -2,19 +2,21 @@
 
 class BackgroundServices
   class Scheduled
-    class Start
-      attr_reader :job, :jobs_container, :try_count, :try_run_time, :started_at
+    class AtomicJob
+      attr_reader :job, :try_count, :try_run_time, :started_at
 
-      def initialize(job, jobs_container)
+      def initialize(job)
         @job            = job
-        @jobs_container = jobs_container
+        @try_count      = 0
+        @try_run_time   = Time.current
+      end
+
+      def launch
+        start
       end
 
       # def _start_job(job, try_count = 0, try_run_time = Time.zone.now)
       def start
-        @try_count = 0
-        @try_run_time = Time.current
-
         mark_as_started
         execute
       rescue => e
@@ -87,9 +89,6 @@ class BackgroundServices
       end
 
       def retry_limit_reached
-        # release thread lock and remove thread handle
-        jobs_container.delete(job.id)
-
         error = "Failed to run #{job.method} after #{try_count} tries #{e.inspect}"
         Rails.logger.error error
 
@@ -98,6 +97,8 @@ class BackgroundServices
           status:        'error',
           active:        false,
         )
+
+        raise RetryLimitReached
       end
     end
   end

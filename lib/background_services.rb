@@ -2,8 +2,6 @@
 
 class BackgroundServices
   def run
-    Thread.abort_on_exception = true
-
     [BackgroundServices::Delayed, BackgroundServices::Scheduled].each do |service|
       start(service)
     end
@@ -15,6 +13,8 @@ class BackgroundServices
 
   def start(service)
     Thread.new do
+      Thread.current.abort_on_exception = true
+
       begin
         ActiveRecord::Base.connection.reconnect!
       rescue => e

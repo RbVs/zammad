@@ -8,6 +8,10 @@ class Scheduler < ApplicationModel
 
   scope :failed_jobs, -> { where(status: 'error', active: false) }
 
+  def runs_as_persistent_loop?
+    active && period && period <= 5.minutes
+  end
+
   # This function restarts failed jobs to retry them
   #
   # @example

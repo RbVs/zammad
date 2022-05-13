@@ -13,7 +13,9 @@ class BackgroundServices
         Rails.logger.info 'Scheduler running...'
 
         scope.each do |job|
-          BackgroundServices::Scheduled::Fork.run(job, jobs_started)
+          BackgroundServices::Scheduled::Manager
+            .new(job, jobs_started)
+            .run
 
           sleep 10
         end

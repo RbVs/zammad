@@ -2,7 +2,7 @@
 
 class BackgroundServices
   class Scheduled
-    class Fork
+    class Manager
       attr_reader :job, :jobs_container
 
       def initialize(job, jobs_container)
@@ -64,18 +64,24 @@ class BackgroundServices
 
       def start
         Thread.new do
-          ApplicationHandleInfo.use('scheduler') do
-            Rails.logger.debug { "Started job thread for '#{job.name}' (#{job.method})..." }
-
-            inner = InThread.new(job, jobs_container)
-            inner.launch
-
-            @job = inner.job
-
-            wrapup
-          end
-
+          start_in_thread
+        rescue RetryLimitReached
+          jobs_container.delete(job.id)
+        ensure
           ActiveRecord::Base.connection.close
+        end
+      end
+
+      def start_in_thread
+        ApplicationHandleInfo.use('scheduler') do
+          Rails.logger.debug { "Started job thread for '#{job.name}' (#{job.method})..." }
+
+          inner = atomic_job_klass(job).new(job)
+          inner.launch
+
+          @job = inner.job
+
+          wrapup
         end
       end
 
@@ -111,8 +117,8 @@ class BackgroundServices
         Rails.logger.error message
       end
 
-      def self.run(job, jobs_container)
-        new(job, jobs_container).run
+      def atomic_job_klass(job)
+        job.runs_as_persistent_loop? ? AtomicJob : LoopJob
       end
     end
   end
