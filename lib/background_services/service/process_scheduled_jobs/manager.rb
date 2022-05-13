@@ -1,7 +1,7 @@
 # Copyright (C) 2012-2022 Zammad Foundation, https://zammad-foundation.org/
 
 class BackgroundServices
-  module Service
+  class Service
     class ProcessScheduledJobs
       class Manager
         attr_reader :job, :jobs_container

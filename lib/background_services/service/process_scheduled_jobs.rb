@@ -1,11 +1,12 @@
 # Copyright (C) 2012-2022 Zammad Foundation, https://zammad-foundation.org/
 
 class BackgroundServices
-  module Service
-    class ProcessScheduledJobs
+  class Service
+    class ProcessScheduledJobs < Service
       attr_reader :jobs_started
 
       def initialize
+        super
         @jobs_started = {}
       end
 

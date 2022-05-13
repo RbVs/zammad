@@ -1,8 +1,13 @@
 # Copyright (C) 2012-2022 Zammad Foundation, https://zammad-foundation.org/
 
 class BackgroundServices
+
+  def self.available_services
+    BackgroundServices::Service.descendants
+  end
+
   def run
-    [BackgroundServices::Delayed, BackgroundServices::Scheduled].each do |service|
+    self.class.available_services.each do |service|
       start(service)
     end
 

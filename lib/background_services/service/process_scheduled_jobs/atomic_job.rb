@@ -1,7 +1,7 @@
 # Copyright (C) 2012-2022 Zammad Foundation, https://zammad-foundation.org/
 
 class BackgroundServices
-  module Service
+  class Service
     class ProcessScheduledJobs
       class AtomicJob
         attr_reader :job, :try_count, :try_run_time, :started_at
