@@ -4,6 +4,11 @@ class BackgroundServices
   class Cli < Thor
     # rubocop:disable Zammad/DetectTranslatableString
 
+    def self.exit_on_failure?
+      # Signal to Thor API that failures should be reflected in the exit code.
+      true
+    end
+
     SERVICES = BackgroundServices.available_services.index_by do |s|
       s.name.demodulize.underscore.dasherize
     end
