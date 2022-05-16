@@ -72,7 +72,7 @@ Daemons.run_proc('scheduler', daemon_options) do
   end
 
   begin
-    Scheduler.threads
+    BackgroundServices.new.run
   rescue Interrupt
     nil
   end
