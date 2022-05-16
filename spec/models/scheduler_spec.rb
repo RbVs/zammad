@@ -4,7 +4,7 @@ require 'rails_helper'
 require 'models/concerns/has_xss_sanitized_note_examples'
 require 'models/concerns/has_timeplan_examples'
 
-RSpec.describe Scheduler do
+RSpec.describe Scheduler, skip: true do
 
   let(:test_backend_class) do
     Class.new do
