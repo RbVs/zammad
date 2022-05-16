@@ -61,10 +61,7 @@ class BackgroundServices
         end
 
         def reschedulable?
-          @reschedulable ||= job
-            .payload_object
-            .try :object
-            .try :reschedule?, job
+          @reschedulable ||= job.payload_object.try(:object).try(:reschedule?, job)
         end
       end
     end
