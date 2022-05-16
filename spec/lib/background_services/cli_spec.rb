@@ -15,7 +15,7 @@ RSpec.describe BackgroundServices::Cli do
       end
     end
 
-    def run_with_timeout()
+    def run_with_timeout(&block)
       # Stop after timeout and return true if everything was ok.
       Timeout.timeout(2.seconds, &block)
       raise 'Process ended unexpectedly.'
