@@ -35,20 +35,9 @@ RSpec.describe BackgroundServices::Cli do
 
     context 'when running all services' do
       it 'starts scheduler correctly' do
-        expect(run_with_timeout { described_class.start ['run-all-services'] }).to be(true)
+        expect(run_with_timeout { described_class.start ['start'] }).to be(true)
       end
     end
 
-    context 'when running only process-delayed-jobs' do
-      it 'starts scheduler correctly' do
-        expect(run_with_timeout { described_class.start %w[run-services process-delayed-jobs] }).to be(true)
-      end
-    end
-
-    context 'when running only process-scheduled-jobs' do
-      it 'starts scheduler correctly' do
-        expect(run_with_timeout { described_class.start %w[run-services process-scheduled-jobs] }).to be(true)
-      end
-    end
   end
 end

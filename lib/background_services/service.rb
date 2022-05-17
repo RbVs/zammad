@@ -3,4 +3,8 @@
 # Base class for background services
 class BackgroundServices::Service
   include Mixin::RequiredSubPaths
+
+  def self.max_workers
+    1
+  end
 end

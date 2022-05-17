@@ -9,25 +9,29 @@ class BackgroundServices
       true
     end
 
-    SERVICES = BackgroundServices.available_services.index_by do |s|
-      s.name.demodulize.underscore.dasherize
-    end
-
-    desc 'run-all-services', 'Execute all background services.'
-    def run_all_services()
+    desc 'start', 'Execute background services.'
+    def start
       BackgroundServices.new.run
     end
 
-    desc "run-services #{SERVICES.keys.join('|')}", 'Execute the specified background service(s) (comma-separated).'
-    def run_services(services_list)
-      services = services_list.split(',').uniq
-      services.each do |service|
-        raise "Invalid service #{service}" if SERVICES.exclude?(service)
-      end
-      raise 'No service was specified.' if services.length.zero?
+    def self.help(shell, subcommand = nil)
+      super
+      shell.say 'You can customize startup behaviour for the different background services with these command line options:'
+      shell.say
 
-      BackgroundServices.new.run(services.map { |s| SERVICES[s] })
+      list = [
+        ['Service', 'Set worker count', 'Max. workers', 'Disable this service'],
+        ['-------', '----------------', '------------', '--------------------'],
+      ]
+      BackgroundServices.available_services.each do |service|
+        service_name = service.name.demodulize
+        env_prefix   = "ZAMMAD_#{service_name.underscore.upcase}"
+        list.push [service_name, "#{env_prefix}_WORKERS", service.max_workers, "#{env_prefix}_DISABLE"]
+      end
+      shell.print_table(list, indent: 2)
+
     end
+
     # rubocop:enable Zammad/DetectTranslatableString
   end
 end

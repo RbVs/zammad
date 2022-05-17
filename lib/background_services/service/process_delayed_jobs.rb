@@ -5,6 +5,10 @@ class BackgroundServices
     class ProcessDelayedJobs < Service
       WAIT = 4
 
+      def self.max_workers
+        16
+      end
+
       def initialize
         super
         cleanup
