@@ -17,15 +17,7 @@ class BackgroundServices
   end
 
   def start(service)
-    Thread.new do
-      Thread.current.abort_on_exception = true
-
-      begin
-        ActiveRecord::Base.connection.reconnect!
-      rescue => e
-        Rails.logger.error "Can't reconnect to database #{e.inspect}"
-      end
-
+    ProcessingThread.new abort: true do
       service.new.run
     end
   end

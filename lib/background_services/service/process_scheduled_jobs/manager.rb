@@ -64,12 +64,10 @@ class BackgroundServices
         end
 
         def start
-          Thread.new do
+          ProcessingThread.new do
             start_in_thread
           rescue RetryLimitReached
             jobs_container.delete(job.id)
-          ensure
-            ActiveRecord::Base.connection.close
           end
         end
 
